@@ -14,8 +14,8 @@ Converts PWX files to GPX or TCX
 
 ## Include in your PHP project
 
-    $output = DKZR\Convertors\Pwx::toGpx( $input );
+    $output_text = DKZR\Convertors\Pwx::toGpx( $input_text );
 
 or
 
-    $output = DKZR\Convertors\Pwx::toTcx( $input );
+    $output_text = DKZR\Convertors\Pwx::toTcx( $input_text );
