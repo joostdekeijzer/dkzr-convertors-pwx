@@ -1,0 +1,140 @@
+#!/usr/bin/env php
+<?php
+if ( !ini_get('date.timezone') ) {
+    ini_set( 'date.timezone', 'UTC' );
+}
+
+foreach ( [ __DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php', __DIR__ . '/src/Pwx.php' ] as $file ) {
+    if (file_exists($file)) {
+        require $file;
+        break;
+    }
+}
+
+if ( ! class_exists( 'DKZR\Convertors\Pwx' ) ) {
+    fwrite(
+        STDERR,
+        'You need to set up the project dependencies (eg. using Composer:' . PHP_EOL . PHP_EOL .
+        '    `composer install`)' . PHP_EOL . PHP_EOL .
+        'You can learn all about Composer on https://getcomposer.org/.' . PHP_EOL
+    );
+    die(1);
+}
+
+$input_file = null;
+$output_file = null;
+$to = 'gpx';
+
+$options = getopt( 'dht:' );
+
+function showHelp() {
+    fwrite(
+        STDERR,
+        'Usage:' . PHP_EOL .
+        '    convert-pwx  [OPTION]... SRC [DEST]' . PHP_EOL . PHP_EOL .
+        '    Options' . PHP_EOL .
+        '    -d    dump content to SDOUT' . PHP_EOL .
+        '    -h    show this help' . PHP_EOL .
+        '    -t    convert to type "gpx" (default) or "tcx"' . PHP_EOL
+    );
+}
+
+$possible_files = $argv;
+array_shift( $possible_files ); // remove index 0 (script name)
+
+foreach ( array_keys( $options ) as $opt ) {
+    $index = array_search( "-{$opt}", $possible_files );
+    if ( false !== $index ) {
+        unset( $possible_files[ $index ] );
+    }
+}
+foreach ( array_filter( $options ) as $opt_value ) {
+    $index = array_search( $opt_value, $possible_files );
+    if ( false !== $index ) {
+        unset( $possible_files[ $index ] );
+    }
+}
+
+if ( array_key_exists( 'h', $options ) ) {
+    showHelp();
+    die(0);
+}
+
+if ( array_key_exists( 'd', $options ) ) {
+    $output_file = false;
+}
+
+if ( isset( $options['t'] ) ) {
+    $options['t'] = strtolower( trim( $options['t'] ) );
+    if ( ! in_array( $options['t'], [ 'gpx', 'tcx' ] ) ) {
+        fwrite(
+            STDERR,
+            'Only types "gpx" or "tcx" are allowed for option -t.' . PHP_EOL
+        );
+        die(3);
+    }
+} else {
+    $options['t'] = 'gpx';
+}
+
+foreach ( $possible_files as $file ) {
+    if ( is_null( $input_file ) ) {
+        $input_file = $file;
+    } else if ( is_null( $output_file ) ) {
+        $output_file = $file;
+    }
+}
+
+if ( is_null( $input_file ) ) {
+    showHelp();
+    die(2);
+}
+
+if ( ! is_file( $input_file ) ) {
+    fwrite(
+        STDERR,
+        'Not a valid input file.' . PHP_EOL
+    );
+    die(4);
+}
+
+if ( $output_file && ! is_dir( dirname( $output_file ) ) ) {
+    fwrite(
+        STDERR,
+        'Not a valid output file.' . PHP_EOL
+    );
+    die(5);
+} else if ( is_null( $output_file ) ) {
+    $path = $input_file;
+    if ( '.pwx' == strtolower( substr( $path, -4 ) ) ) {
+        $path = substr( $path, 0, -4 );
+    }
+    $output_file = $path . '.' . $options['t'];
+}
+if ( false === strpos( basename( $output_file ), '.' ) ) {
+    $output_file .= '.' . $options['t'];
+}
+
+$input = file_get_contents( $input_file );
+$output = '';
+switch ( $options['t'] ) {
+    case 'gpx':
+        $output = DKZR\Convertors\Pwx::toGpx( $input );
+        break;
+    case 'tcx':
+        $output = DKZR\Convertors\Pwx::toTcx( $input );
+        break;
+    default:
+        fwrite(
+            STDERR,
+            'Internal error.' . PHP_EOL
+        );
+        die(6);
+}
+
+if ( false === $output_file ) {
+    echo $output;
+} else {
+    file_put_contents( $output_file, $output );
+}
+die(0);
