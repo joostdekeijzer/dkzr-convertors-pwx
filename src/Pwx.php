@@ -71,11 +71,12 @@ class Pwx {
 
       $trkpt->addAttribute( 'lat', $lat );
       $trkpt->addAttribute( 'lon', $lon );
-      $trkpt->addChild( 'time', $time );
 
       if ( null !== $ele ) {
         $trkpt->addChild( 'ele', $ele );
       }
+
+      $trkpt->addChild( 'time', $time );
     }
 
     $b = $gpx->metadata->addChild( 'bounds' );
