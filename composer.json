@@ -1,0 +1,32 @@
+{
+    "name": "dkzr/convert-pwx",
+    "description": "Convert PWX files to GPX or TCX.",
+    "type": "library",
+    "keywords": [
+        "convert",
+        "pwx",
+        "gpx",
+        "tcx"
+    ],
+    "homepage": "https://dkzr.nl/",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Joost de Keijzer",
+            "email": "j@dkzr.nl",
+            "role": "lead"
+        }
+    ],
+    "prefer-stable": true,
+    "require": {
+        "php": "^5.4",
+    },
+    "bin": [
+        "convert-pwx"
+    ],
+    "autoload": {
+        "classmap": [
+            "src/"
+        ]
+    }
+}
